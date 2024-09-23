@@ -1,0 +1,233 @@
+
+
+openapi: '3.0.3'
+
+info:
+  description: Slack Mock Backend
+  version: 0.1.0
+  title: Slack Mock Backend
+
+servers:
+  - url: http://localhost:3010/v0
+
+paths:
+  /login:
+    post:
+      description: Login
+      requestBody:
+        description: Request Body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        200:
+          description: Successful Login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+  /workspaces:
+    get:
+      security:
+        - bearerAuth: []         
+      description: Returns all names of Workspaces
+      responses:
+        401:
+          description: Unauthorized
+        200:
+          description: Workspace Successful
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Workspace'
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+  /channels:
+    get:
+      security:
+        - bearerAuth: []
+      description: Returns all channels for a user in a specific workspace
+      parameters:
+        - in: query
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+      responses:
+        401:
+          description: Unauthorized
+        200:
+          description: Channels Fetched Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Channel'
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+  /messages:
+    post:
+      security:
+        - bearerAuth: []
+      description: Adds a new message to a channel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+      responses:
+        201:
+          description: Message created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Channel Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+        
+
+components:
+  schemas:
+    UnexpectedError:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+    Credentials:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        accessToken:
+          type: string
+      required:
+        - name
+        - accessToken
+    Workspace:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+        required:
+          - id
+          - name
+    WorkspaceName:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+        required:
+          - name
+    Channel:
+      type: object
+      properties:
+        channel_id:
+          type: string
+        channel_name:
+          type: string
+        channel_data:
+          type: object
+      required:
+        - channel_id
+        - channel_name
+    NewMessage:
+      type: object
+      properties:
+        channelId:
+          type: string
+          format: uuid
+        content:
+          type: string
+      required:
+        - channelId
+        - content
+
+    Message:
+      type: object
+      properties:
+        channel_id:
+          type: string
+        user_id:
+          type: string
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - channel_id
+        - user_id
+        - content
+        - timestamp
+
+
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+

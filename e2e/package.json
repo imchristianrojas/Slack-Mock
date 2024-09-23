@@ -1,0 +1,41 @@
+{
+  "name": "slack-mock",
+  "version": "3.0.0",
+  "description": "slack-mock- End to End Test",
+  "devDependencies": {
+    "dotenv": "*",
+    "eslint": "8.57.0",
+    "eslint-config-google": "*",
+    "express": "*",
+    "jest": "*",
+    "puppeteer": "*",
+    "puppeteer-core": "*",
+    "supertest": "*"
+  },
+  "jest": {
+    "testMatch": [
+      "**/?(*.)+(spec|test).[jt]s?(x)"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "google"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 15
+    },
+    "rules": {
+      "indent": [
+        "warn",
+        2
+      ]
+    }
+  },
+  "scripts": {
+    "docker": "cd ../backend && docker compose down && docker compose up -d",
+    "build": "cd ../frontend && npm run build",
+    "e2e": "jest --testTimeout=20000 --runInBand --verbose --forceExit --detectOpenHandles",
+    "test": "(npm run build) && (npm run docker) && (npm run e2e)",
+    "lint": "eslint test --no-inline-config --max-warnings 0 --ext .js"
+  }
+}
